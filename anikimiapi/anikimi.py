@@ -390,3 +390,26 @@ class AniKimi:
             raise AiringIndexError("No content found on the given page number")
         except requests.exceptions.ConnectionError:
             raise NetworkError("Unable to connect to server")
+
+       try:
+            if int(count) >= 20:
+                raise CountError("count parameter cannot exceed 20")
+            else:
+                url = f"{self.host}popular.html"
+                session = HTMLSession()
+                response = session.get(url)
+                response_html = response.text
+                soup = BeautifulSoup(response_html, 'html.parser')
+                anime = soup.find("ul", {"class": "items"}).find_all("li")
+                air = []
+                for link in anime.find_all('a'):
+                    popular_link = link.get('href')
+                    name = link.get('title')  # name of the anime
+                    link = popular_link.split('/')
+                    lnk_final = link[2]  # animeid  anime
+                    air.append(ResultObject(title=f"{name}", animeid=f"{lnk_final}"))
+                return air[0:int(count)]
+        except IndexError or AttributeError or TypeError:
+            raise AiringIndexError("No content found on the given page number")
+        except requests.exceptions.ConnectionError:
+            raise NetworkError("Unable to connect to server")
